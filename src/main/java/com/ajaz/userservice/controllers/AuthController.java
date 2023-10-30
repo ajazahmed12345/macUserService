@@ -1,6 +1,7 @@
 package com.ajaz.userservice.controllers;
 
 import com.ajaz.userservice.dtos.LoginRequestDto;
+import com.ajaz.userservice.dtos.LogoutRequestDto;
 import com.ajaz.userservice.dtos.SignUpRequestDto;
 import com.ajaz.userservice.dtos.UserDto;
 import com.ajaz.userservice.exceptions.NotFoundException;
@@ -31,6 +32,13 @@ public class AuthController {
         return authService.login(loginRequestDto.getEmail(), loginRequestDto.getPassword());
 
 
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestBody LogoutRequestDto request) throws NotFoundException{
+        String response = authService.logout(request.getUserId(), request.getToken());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 //    @ExceptionHandler(value = {NotFoundException.class})

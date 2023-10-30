@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMapAdapter;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -128,5 +129,26 @@ public class AuthService {
         headers.add(HttpHeaders.SET_COOKIE, "auth-token:" + token);
 
         return new ResponseEntity<>(userDto, headers, HttpStatus.OK);
+    }
+
+
+    public String logout(Long userId, String token) throws NotFoundException{
+
+        Optional<Session> sessionOptional = sessionRepository.findByUser_IdAndToken(userId, token);
+
+        if(sessionOptional.isEmpty()){
+            throw new NotFoundException("Session with userId = " + userId + " and given token does not exist.");
+        }
+
+        Long sessionEndedId = sessionOptional.get().getId();
+
+        Session session = sessionOptional.get();
+
+        session.setSessionStatus(SessionStatus.ENDED);
+
+        sessionRepository.save(session);
+
+
+        return "Session with id = " + sessionEndedId + " has been deleted.";
     }
 }
