@@ -1,14 +1,10 @@
 package com.ajaz.userservice.services;
 
-import com.ajaz.userservice.dtos.SetUserRolesRequestDto;
 import com.ajaz.userservice.dtos.UserDto;
-import com.ajaz.userservice.exceptions.NotFoundException;
 import com.ajaz.userservice.models.Role;
 import com.ajaz.userservice.models.User;
 import com.ajaz.userservice.repositories.RoleRepository;
 import com.ajaz.userservice.repositories.UserRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -18,6 +14,7 @@ import java.util.Set;
 
 @Service
 public class UserService {
+
     private UserRepository userRepository;
     private RoleRepository roleRepository;
 
@@ -25,33 +22,41 @@ public class UserService {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
     }
-    public ResponseEntity<UserDto> getUserDetails(Long id) throws NotFoundException{
-        Optional<User> userOptional = userRepository.findById(id);
+    public UserDto getUseDetails(Long userId){
+        Optional<User> userOptional = userRepository.findById(userId);
+
         if(userOptional.isEmpty()){
-            throw new NotFoundException("User with id = " + id + " does not exist");
+            return null;
         }
 
         User user = userOptional.get();
 
-        return new ResponseEntity<>(UserDto.from(user), HttpStatus.OK);
+        UserDto userDto = UserDto.from(user);
+
+        return userDto;
+
+
     }
 
-    public ResponseEntity<UserDto> setUserRoles(Long id, List<Long> roleIds) throws NotFoundException{
-        Optional<User> userOptional = userRepository.findById(id);
+    public UserDto setUserRoles(Long userId, List<Long> roleIds) {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
         if(userOptional.isEmpty()){
-            throw new NotFoundException("User with id = " + id + " does not exist");
+            return null;
         }
 
         User user = userOptional.get();
+        List<Role> userRoles = roleRepository.findAllByIdIn(roleIds);
 
-        List<Role> roles = roleRepository.findAllByIdIn(roleIds);
+        Set<Role> rolesSet = new HashSet<>();
 
-        roles.forEach(e -> user.getRoles().add(e));
+        userRoles.forEach(e -> rolesSet.add(e));
+        //user.setRoles(rolesSet);
 
         User savedUser = userRepository.save(user);
 
+        return UserDto.from(savedUser);
 
-
-        return new ResponseEntity<>(UserDto.from(savedUser), HttpStatus.OK);
     }
 }
